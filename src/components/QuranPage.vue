@@ -7,7 +7,9 @@
       </div>
       <div class="pagination">
         <button v-if="currentPage > 1" @click="goToPage(currentPage - 1)">Previous</button>
-        <button v-for="pageNumber in totalPages" :key="pageNumber" @click="goToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">{{ pageNumber }}</button>
+        <button v-for="pageNumber in totalPages" :key="pageNumber" @click="addUserToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">
+          {{ pageNumber }} ({{ onlineUsers[pageNumber]?.join(', ') || '' }})
+        </button>
         <button v-if="currentPage < totalPages" @click="goToPage(currentPage + 1)">Next</button>
       </div>
     </div>
@@ -16,6 +18,9 @@
 
 <script>
 import axios from 'axios';
+import db from '../firebase/init.js'
+import { doc, addDoc, collection, setDoc, onSnapshot } from "firebase/firestore";
+
 
 export default {
   name: 'QuranPage',
@@ -23,11 +28,13 @@ export default {
     return {
       quranPage: null,
       currentPage: 1,
-      totalPages: 614,
+      totalPages: 604,
+      onlineUsers: {},
     };
   },
   mounted() {
     this.fetchPage(1);
+    this.listenForOnlineUsers();
   },
   methods: {
     fetchPage(pageNumber) {
@@ -41,10 +48,33 @@ export default {
           console.log(error);
         });
     },
+    
     goToPage(pageNumber) {
       if (pageNumber >= 1 && pageNumber <= this.totalPages) {
         this.fetchPage(pageNumber);
       }
+    },
+
+    async addUserToPage(pageNumber) {
+      // const user = firebase.auth().currentUser;
+      await setDoc(doc(db, `onlineUsers/${pageNumber}/user.uid/name`), {name: 'user.displayName'});
+      // if (user) {
+      // }
+    },
+
+    listenForOnlineUsers() {
+      
+      // const colRef = collection(db, 'onlineUsers')
+
+      
+      // const unsub = onSnapshot(doc(db, "onlineUsers"), (doc) => {
+      //     console.log("Current data: ", doc.data());
+      // });
+
+      // colRef.on('value', snapshot => {
+      //   const onlineUsers = snapshot.val() || {};
+      //   this.onlineUsers = onlineUsers;
+      // });
     },
   },
 };
