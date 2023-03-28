@@ -7,8 +7,8 @@
       </div>
       <div class="pagination">
         <button v-if="currentPage > 1" @click="goToPage(currentPage - 1)">Previous</button>
-        <button v-for="pageNumber in totalPages" :key="pageNumber" @click="addUserToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">
-          {{ pageNumber }} ({{ onlineUsers[pageNumber]?.join(', ') || '' }})
+        <button v-for="pageNumber in totalPages" :key="pageNumber" @click="goToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">
+          {{ pageNumber }} ({{ onlineUsers[pageNumber] }})
         </button>
         <button v-if="currentPage < totalPages" @click="goToPage(currentPage + 1)">Next</button>
       </div>
@@ -18,8 +18,9 @@
 
 <script>
 import axios from 'axios';
-import db from '../firebase/init.js'
-import { doc, addDoc, collection, setDoc, onSnapshot } from "firebase/firestore";
+import fb from '../firebase'
+import { doc, addDoc, getDocs, query, collection, setDoc, onSnapshot } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 
 export default {
@@ -48,33 +49,48 @@ export default {
           console.log(error);
         });
     },
-    
     goToPage(pageNumber) {
       if (pageNumber >= 1 && pageNumber <= this.totalPages) {
         this.fetchPage(pageNumber);
+        this.addUserToPage(pageNumber);
       }
     },
 
     async addUserToPage(pageNumber) {
-      // const user = firebase.auth().currentUser;
-      await setDoc(doc(db, `onlineUsers/${pageNumber}/user.uid/name`), {name: 'user.displayName'});
-      // if (user) {
-      // }
+      const auth = getAuth();
+      const user = auth.currentUser;
+      // console.log(user.email);
+      // console.log(user.displayName);
+      // console.log(fb.db);
+      // console.log(`onlineUsers/${pageNumber}/${user.uid}/name`);
+      if (user) {
+        const keyy = user.uid;
+        await setDoc(doc(fb.db, `onlineUsers-${pageNumber}/${keyy}`), {key: user.email});
+      }
     },
 
-    listenForOnlineUsers() {
-      
-      // const colRef = collection(db, 'onlineUsers')
+    async listenForOnlineUsers() {
 
-      
-      // const unsub = onSnapshot(doc(db, "onlineUsers"), (doc) => {
-      //     console.log("Current data: ", doc.data());
-      // });
+      const dbRef = collection(fb.db, "onlineUsers-10");
 
-      // colRef.on('value', snapshot => {
-      //   const onlineUsers = snapshot.val() || {};
-      //   this.onlineUsers = onlineUsers;
-      // });
+      onSnapshot(dbRef, docsSnap => {
+        docsSnap.forEach(doc => {
+          this.onlineUsers[10] = doc.data().key;
+          console.log('ok', doc.data().key);
+          console.log('ok', this.onlineUsers);
+        })
+      });
+
+      const querySnapshot = await getDocs(collection(fb.db, "onlineUsers-10"));
+      querySnapshot.forEach((doc_item) => {
+        console.log(doc_item.id, " => ", doc_item.data());
+
+        const unsub = onSnapshot(doc(fb.db, `onlineUsers-10/${doc_item.id}`), (doc_item2) => {
+            console.log("Current data 2: ", doc_item2.data());
+        });
+
+      });
+
     },
   },
 };

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, collection, doc, setDoc } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged} from 'firebase/auth';
 
 var firebaseConfig = {
     apiKey: "AIzaSyBRPXWkKIBJwuPHwNr5jAeQotFbvEdQoH0",
@@ -12,7 +12,14 @@ var firebaseConfig = {
     measurementId: "G-BJM0YE4FHS"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-  
-export default db
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+const auth = getAuth(app)
+
+
+onAuthStateChanged(auth, (user) => {
+  console.log(auth.currentUser);
+  console.log(user);
+})
+
+export default { db, auth }
