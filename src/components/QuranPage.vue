@@ -6,11 +6,9 @@
         <p>{{ ayah.text }}</p>
       </div>
       <div class="pagination">
-        <button v-if="currentPage > 1" @click="goToPage(currentPage - 1)">Previous</button>
         <button v-for="pageNumber in totalPages" :key="pageNumber" @click="goToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">
           {{ pageNumber }} {{ pages[pageNumber]?.join(', ') }}
         </button>
-        <button v-if="currentPage < totalPages" @click="goToPage(currentPage + 1)">Next</button>
       </div>
     </div>
   </div>
@@ -61,8 +59,6 @@ export default {
       const user = auth.currentUser;
       // console.log(user.email);
       // console.log(user.displayName);
-      // console.log(fb.db);
-      // console.log(`pages/${pageNumber}/${user.uid}/name`);
       if (user) {
         await setDoc(doc(fb.db, `pages/${pageNumber}/users/${user.uid}`), {name: user.email});
       }
@@ -70,31 +66,21 @@ export default {
 
     async listenForOnlineUsers() {
 
-      const dbRef = collection(fb.db, "pages/6/users");
-      this.pages[6] = [];
+      for (let index = 1; index < 605; index++) {
 
-      onSnapshot(dbRef, docsSnap => {
-        this.pages[6] = [];
-        docsSnap.forEach(doc => {
-          this.pages[6].push( doc.data().name);
-          console.log('ok', doc.id);
-          console.log('ok', doc.data().name);
-          // console.log('ok', {...this.pages[6]});
-        })
-      });
+        const dbRef = collection(fb.db,`pages/${index}/users`);
+        // this.pages[index] = [];
 
-      // const querySnapshot = await getDocs(collection(fb.db, "pages/6/users"));
-      // querySnapshot.forEach((doc_item) => {
-      //   console.log(doc_item.id, " => ", doc_item.data());
-
-      //   // this.pages[6] = [];
-      //   const unsub = onSnapshot(doc(fb.db, `pages/6/users/${doc_item.id}`), (doc_item2) => {
-      //       console.log("Current data 2: ", doc_item2.data().name);
-
-      //       // this.pages[6] << doc_item2.data().name
-      //   });
-
-      // });
+        onSnapshot(dbRef, docsSnap => {
+          this.pages[index] = [];
+          docsSnap.forEach(doc => {
+            this.pages[index].push( doc.data().name);
+            console.log('ok', doc.id);
+            console.log('ok', doc.data().name);
+            // console.log('ok', {...this.pages[6]});
+          })
+        });
+      }
 
     },
   },
