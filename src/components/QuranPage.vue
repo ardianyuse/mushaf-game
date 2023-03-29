@@ -8,7 +8,7 @@
       <div class="pagination">
         <button v-if="currentPage > 1" @click="goToPage(currentPage - 1)">Previous</button>
         <button v-for="pageNumber in totalPages" :key="pageNumber" @click="goToPage(pageNumber)" :class="{ active: pageNumber === currentPage }">
-          {{ pageNumber }} ({{ onlineUsers[pageNumber] }})
+          {{ pageNumber }} {{ pages[pageNumber]?.join(', ') }}
         </button>
         <button v-if="currentPage < totalPages" @click="goToPage(currentPage + 1)">Next</button>
       </div>
@@ -30,7 +30,7 @@ export default {
       quranPage: null,
       currentPage: 1,
       totalPages: 604,
-      onlineUsers: {},
+      pages: {},
     };
   },
   mounted() {
@@ -62,34 +62,39 @@ export default {
       // console.log(user.email);
       // console.log(user.displayName);
       // console.log(fb.db);
-      // console.log(`onlineUsers/${pageNumber}/${user.uid}/name`);
+      // console.log(`pages/${pageNumber}/${user.uid}/name`);
       if (user) {
-        const keyy = user.uid;
-        await setDoc(doc(fb.db, `onlineUsers-${pageNumber}/${keyy}`), {key: user.email});
+        await setDoc(doc(fb.db, `pages/${pageNumber}/users/${user.uid}`), {name: user.email});
       }
     },
 
     async listenForOnlineUsers() {
 
-      const dbRef = collection(fb.db, "onlineUsers-10");
+      const dbRef = collection(fb.db, "pages/6/users");
+      this.pages[6] = [];
 
       onSnapshot(dbRef, docsSnap => {
+        this.pages[6] = [];
         docsSnap.forEach(doc => {
-          this.onlineUsers[10] = doc.data().key;
-          console.log('ok', doc.data().key);
-          console.log('ok', this.onlineUsers);
+          this.pages[6].push( doc.data().name);
+          console.log('ok', doc.id);
+          console.log('ok', doc.data().name);
+          // console.log('ok', {...this.pages[6]});
         })
       });
 
-      const querySnapshot = await getDocs(collection(fb.db, "onlineUsers-10"));
-      querySnapshot.forEach((doc_item) => {
-        console.log(doc_item.id, " => ", doc_item.data());
+      // const querySnapshot = await getDocs(collection(fb.db, "pages/6/users"));
+      // querySnapshot.forEach((doc_item) => {
+      //   console.log(doc_item.id, " => ", doc_item.data());
 
-        const unsub = onSnapshot(doc(fb.db, `onlineUsers-10/${doc_item.id}`), (doc_item2) => {
-            console.log("Current data 2: ", doc_item2.data());
-        });
+      //   // this.pages[6] = [];
+      //   const unsub = onSnapshot(doc(fb.db, `pages/6/users/${doc_item.id}`), (doc_item2) => {
+      //       console.log("Current data 2: ", doc_item2.data().name);
 
-      });
+      //       // this.pages[6] << doc_item2.data().name
+      //   });
+
+      // });
 
     },
   },
